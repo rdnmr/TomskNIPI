@@ -1,0 +1,102 @@
+using System;
+using System.Management;
+
+namespace ConsoleApp1
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Выводим название программы
+            Console.WriteLine("Сведения о компьютере:");
+            Console.WriteLine("-----------------------");
+
+            // Выводим название процессора
+            Console.WriteLine("Процессор: " + GetCPUName());
+
+            // Выводим объем оперативной памяти в ГБ
+            Console.WriteLine("ОЗУ: " + GetTotalRAM() + " ГБ");
+
+            // Выводим название графической карты
+            Console.WriteLine("Графическая карта: " + GetGPUName());
+
+            // Выводим разрешение экрана
+            Console.WriteLine("Разрешение экрана: " + GetScreenResolution());
+
+            // Ждем, пока пользователь не нажмет любую клавишу
+            Console.ReadKey();
+        }
+
+        static string GetCPUName()
+        {
+            string cpuName = string.Empty;
+
+            // Используем WMI-класс "win32_processor" для получения информации о процессоре
+            ManagementClass mc = new ManagementClass("win32_processor");
+            ManagementObjectCollection moc = mc.GetInstances();
+
+            // Проходим по всем объектам класса "win32_processor"
+            foreach (ManagementObject mo in moc)
+            {
+                if (cpuName == "")
+                {
+                    // Получаем значение свойства "Name"
+                    cpuName = mo["Name"].ToString();
+                }
+            }
+
+            return cpuName;
+        }
+
+        static string GetTotalRAM()
+        {
+            string totalMemory = string.Empty;
+
+            // Используем WMI-класс "Win32_ComputerSystem" для получения информации о системе
+            ManagementScope scope = new ManagementScope();
+            ObjectQuery query = new ObjectQuery("SELECT * FROM Win32_ComputerSystem");
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(scope, query);
+            ManagementObjectCollection queryCollection = searcher.Get();
+
+            // Проходим по всем объектам результата запроса к WMI
+            foreach (ManagementObject m in queryCollection)
+            {
+                // Получаем значение свойства "TotalPhysicalMemory" в байтах
+                totalMemory = m["TotalPhysicalMemory"].ToString();
+            }
+
+            // Конвертируем байты в гигабайты и возвращаем результат
+            return Math.Round(Convert.ToDouble(totalMemory) / (1024 * 1024 * 1024), 2).ToString();
+        }
+
+        static string GetGPUName()
+        {
+            string gpuName = string.Empty;
+
+            // Используем WMI-класс "win32_videocontroller" для получения информации о графической карте
+            ManagementClass mc = new ManagementClass("win32_videocontroller");
+            ManagementObjectCollection moc = mc.GetInstances();
+
+            // Проходим по всем объектам класса "win32_videocontroller"
+            foreach (ManagementObject mo in moc)
+            {
+                if (gpuName == "")
+                {
+                    // Получаем значение свойства "Name"
+                    gpuName = mo["Name"].ToString();
+                }
+            }
+
+            return gpuName;
+        }
+
+        static string GetScreenResolution()
+        {
+            // Используем класс "Screen" для получения информации о primary screen
+            return System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width + "x" + System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height;
+        }
+    }
+}
+
+
+
